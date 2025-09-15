@@ -1,0 +1,5 @@
+pip install gallery-dl
+gallery-dl --cookies "ig.txt" "https://www.instagram.com/ukmipolmed/"
+
+===ig.txt===
+Use chrome extension Get cookies.txt LOCALLY
