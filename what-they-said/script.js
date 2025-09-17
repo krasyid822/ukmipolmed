@@ -52,4 +52,9 @@ function createMessage(msg) {
   return div;
 }
 
+// Setel volume audio latar lebih rendah
+    window.addEventListener('DOMContentLoaded', function() {
+      var audio = document.getElementById('bg-audio');
+      if(audio) audio.volume = 0.25;
+    });
 
