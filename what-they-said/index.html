@@ -5,97 +5,174 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Apa kata mereka soal mentoring?</title>
   <style>
+    :root {
+      /* Light theme (default) */
+      --bg-color: #efeae2;
+      --bg-pattern: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.5" fill="rgba(0,0,0,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+      --text-color: #111b21;
+      --bubble-bg: #ffffff;
+      --bubble-shadow: rgba(0,0,0,0.08);
+      --sender-color: #667781;
+      --heading-color: #00a884;
+      --link-bg: #e7f3ff;
+      --link-hover: #d0e7ff;
+      --tail-color: #ffffff;
+    }
+    
+    [data-theme="dark"] {
+      /* Dark theme */
+      --bg-color: #0d1418;
+      --bg-pattern: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.5" fill="rgba(255,255,255,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
+      --text-color: #e9edef;
+      --bubble-bg: #202c33;
+      --bubble-shadow: rgba(0,0,0,0.12);
+      --sender-color: #8696a0;
+      --heading-color: #00a884;
+      --link-bg: #2a3942;
+      --link-hover: #00a884;
+      --tail-color: #202c33;
+    }
+
     body {
-      background: #ece5dd;
-      font-family: 'Segoe UI', Arial, sans-serif;
+      background: var(--bg-color);
+      background-image: var(--bg-pattern);
+      font-family: 'Helvetica Neue', sans-serif;
       margin: 0;
       padding: 0;
-      color: #222;
+      color: var(--text-color);
     }
+    
+    .theme-toggle {
+      position: fixed;
+      top: 20px;
+      right: 20px;
+      background: var(--bubble-bg);
+      border: 1px solid var(--sender-color);
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 0.9em;
+      color: var(--text-color);
+      z-index: 1000;
+    }
+    
     h2 {
       text-align: center;
       margin: 32px 0 16px 0;
-      color: #075e54;
-      font-weight: 700;
+      color: var(--heading-color);
+      font-weight: bold;
+      font-size: 1.4em;
     }
     .carousel-container {
-      overflow-x: auto;
+      overflow: hidden;
       white-space: nowrap;
-      scroll-behavior: smooth;
-      padding-bottom: 32px;
+      padding: 20px 0;
       margin-bottom: 24px;
+      position: relative;
     }
     .wa-message {
       display: inline-block;
-      background: #fff;
-      border-radius: 16px;
-      box-shadow: 0 2px 12px #0002;
-      margin: 0 16px;
-      min-width: 340px;
+      margin: 0 12px;
+      min-width: 280px;
       max-width: 340px;
       vertical-align: top;
       position: relative;
-      padding: 0 0 16px 0;
-      animation: slide-horizontal 20s linear infinite;
+      animation: slide-horizontal 25s linear infinite;
+    }
+    .wa-content {
+      background: var(--bubble-bg);
+      border-radius: 7.5px;
+      padding: 8px;
+      box-shadow: 0 1px 2px var(--bubble-shadow);
+      margin-left: 45px;
+      position: relative;
+    }
+    .wa-content::before {
+      content: '';
+      position: absolute;
+      left: -8px;
+      top: 12px;
+      width: 0;
+      height: 0;
+      border-style: solid;
+      border-width: 0 8px 8px 0;
+      border-color: transparent var(--tail-color) transparent transparent;
     }
     @keyframes slide-horizontal {
-      0% { transform: translateX(0); }
-      100% { transform: translateX(-100vw); }
+      0% { transform: translateX(100vw); }
+      100% { transform: translateX(-150vw); }
     }
     .wa-header {
       display: flex;
       align-items: center;
-      padding: 16px 16px 0 16px;
+      margin-bottom: 8px;
     }
     .wa-avatar {
-      width: 44px;
-      height: 44px;
+      width: 32px;
+      height: 32px;
       border-radius: 50%;
       object-fit: cover;
-      margin-right: 12px;
-      border: 2px solid #25d366;
+      position: absolute;
+      left: 0;
+      top: 0;
     }
     .wa-sender {
-      font-weight: bold;
-      color: #25d366;
-      font-size: 1.1em;
+      font-weight: 500;
+      color: var(--sender-color);
+      font-size: 0.8em;
+      margin-bottom: 4px;
     }
     .wa-media {
       display: flex;
       flex-wrap: wrap;
-      gap: 4px;
-      justify-content: center;
-      margin: 12px 0 0 0;
-      padding: 0 16px;
+      gap: 2px;
+      margin: 6px 0 8px 0;
+      border-radius: 8px;
+      overflow: hidden;
+      max-width: 260px;
     }
     .wa-media img {
-      width: 48%;
-      border-radius: 8px;
+      flex: 1;
+      min-width: calc(50% - 1px);
+      max-width: calc(50% - 1px);
+      height: 130px;
       object-fit: cover;
-      aspect-ratio: 1/1;
-      background: #eee;
+      background: var(--sender-color);
+      border-radius: 4px;
+    }
+    .wa-media img:only-child {
+      max-width: 100%;
+      min-width: 100%;
+    }
+    .wa-media img:first-child:nth-last-child(3),
+    .wa-media img:first-child:nth-last-child(3) ~ img {
+      min-width: calc(33.33% - 2px);
+      max-width: calc(33.33% - 2px);
     }
     .wa-text {
-      padding: 12px 16px 0 16px;
-      font-size: 1em;
-      color: #222;
+      padding: 4px 0 0 0;
+      font-size: 0.9em;
+      color: var(--text-color);
       white-space: pre-line;
+      line-height: 1.4;
+      margin-top: 4px;
     }
     .wa-link {
       display: block;
       margin: 18px auto 0 auto;
       text-align: center;
-      font-weight: bold;
-      color: #075e54;
+      font-weight: 500;
+      color: var(--heading-color);
       text-decoration: none;
-      background: #e0f2f1;
+      background: var(--link-bg);
       border-radius: 8px;
-      padding: 10px 18px;
+      padding: 12px 24px;
       width: fit-content;
       transition: background 0.2s;
+      border: 1px solid var(--heading-color);
     }
     .wa-link:hover {
-      background: #b2dfdb;
+      background: var(--link-hover);
     }
     @media (max-width: 600px) {
       .wa-message, .carousel-container {
@@ -109,12 +186,36 @@
   </style>
 </head>
 <body>
+  <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
   <h2>Apa kata mereka soal mentoring?</h2>
   <audio id="bg-audio" src="what-they-said\media\energy-sport-rock-motivation-SBA-346721925-preview.mp3" autoplay loop hidden></audio>
   <div class="carousel-container" id="carousel">
     <!-- Kontainer pesan WhatsApp akan diisi oleh JS -->
   </div>
   <a class="wa-link" href="https://forms.gle/e4e6egXHiRnyQVPV7" target="_blank">Daftar Mentoring di sini!</a>
+  <script>
+    function toggleTheme() {
+      const body = document.body;
+      const button = document.querySelector('.theme-toggle');
+      
+      if (body.getAttribute('data-theme') === 'dark') {
+        body.removeAttribute('data-theme');
+        button.textContent = '🌙 Dark Mode';
+        localStorage.setItem('theme', 'light');
+      } else {
+        body.setAttribute('data-theme', 'dark');
+        button.textContent = '☀️ Light Mode';
+        localStorage.setItem('theme', 'dark');
+      }
+    }
+    
+    // Load saved theme (default light)
+    const savedTheme = localStorage.getItem('theme') || 'light';
+    if (savedTheme === 'dark') {
+      document.body.setAttribute('data-theme', 'dark');
+      document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
+    }
+  </script>
   <script src="what-they-said\script.js"></script>
 </body>
 </html>
