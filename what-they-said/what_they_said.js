@@ -1,6 +1,6 @@
 
 // Ambil data pesan dari messages.json agar input lebih mudah
-fetch('what-they-said/messages.json')
+fetch('messages.json')
   .then(res => res.json())
   .then(messages => {
     const carouselTrack = document.getElementById('messagesCarousel');
