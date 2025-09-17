@@ -3,22 +3,210 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Media Player Berurutan</title>
+    <title>Media Player UKMI IG Post</title>
     <style>
-        body { background: #222; color: #fff; font-family: Arial, sans-serif; text-align: center; }
-        #media-container { margin: 40px auto; max-width: 80vw; max-height: 80vh; }
-        img, video { max-width: 100%; max-height: 80vh; border-radius: 12px; box-shadow: 0 4px 24px #0008; }
-        #filename { margin-top: 20px; font-size: 1.1em; color: #ccc; }
-        button { margin: 20px 10px; padding: 10px 20px; font-size: 1em; border-radius: 8px; border: none; background: #444; color: #fff; cursor: pointer; }
-        button:hover { background: #666; }
+        body { 
+            background: #222; 
+            color: #fff; 
+            font-family: Arial, sans-serif; 
+            text-align: center; 
+            margin: 0;
+            padding: 20px 0;
+        }
+        
+        /* Floating Controls */
+        .floating-controls {
+            position: fixed;
+            top: 20px;
+            right: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .floating-nav {
+            position: fixed;
+            top: 20px;
+            left: 20px;
+            display: flex;
+            gap: 10px;
+            z-index: 1000;
+        }
+        
+        .floating-btn {
+            padding: 12px 16px;
+            border: none;
+            border-radius: 25px;
+            background: rgba(68, 68, 68, 0.9);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.9em;
+            backdrop-filter: blur(10px);
+            transition: all 0.3s ease;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+        }
+        
+        .floating-btn:hover {
+            background: rgba(102, 102, 102, 0.9);
+            transform: translateY(-2px);
+        }
+        
+        /* Media Container */
+        #media-container { 
+            margin: 60px auto 40px auto; 
+            max-width: 80vw; 
+            max-height: 70vh; 
+        }
+        
+        img, video { 
+            max-width: 100%; 
+            max-height: 70vh; 
+            border-radius: 12px; 
+            box-shadow: 0 4px 24px rgba(0,0,0,0.5); 
+        }
+        
+        #filename { 
+            margin-top: 20px; 
+            font-size: 1.1em; 
+            color: #ccc; 
+        }
+        
+        /* Navigation buttons */
+        .nav-controls {
+            margin: 30px 0;
+            display: none; /* Hidden karena sudah dipindah ke floating */
+            justify-content: center;
+            gap: 20px;
+        }
+        
+        .nav-btn {
+            padding: 12px 24px;
+            font-size: 1em;
+            border-radius: 8px;
+            border: none;
+            background: #444;
+            color: #fff;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        
+        .nav-btn:hover {
+            background: #666;
+        }
+        
+        /* Grid View */
+        .grid-container {
+            display: none;
+            padding: 20px;
+            max-width: 1200px;
+            margin: 0 auto;
+        }
+        
+        .grid-view {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 15px;
+            margin-top: 20px;
+        }
+        
+        .grid-item {
+            position: relative;
+            border-radius: 8px;
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.3s ease;
+            background: #333;
+            aspect-ratio: 1;
+        }
+        
+        .grid-item:hover {
+            transform: scale(1.05);
+        }
+        
+        .grid-item img,
+        .grid-item video {
+            width: 100%;
+            height: 100%;
+            object-fit: cover;
+            border-radius: 8px;
+        }
+        
+        .grid-item .overlay {
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            right: 0;
+            background: linear-gradient(transparent, rgba(0,0,0,0.8));
+            color: white;
+            padding: 10px;
+            font-size: 0.8em;
+            text-align: center;
+        }
+        
+        /* View Toggle */
+        .view-toggle {
+            margin: 20px 0;
+        }
+        
+        .toggle-btn {
+            padding: 10px 20px;
+            margin: 0 5px;
+            border: 2px solid #444;
+            background: transparent;
+            color: #fff;
+            border-radius: 25px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .toggle-btn.active {
+            background: #444;
+            border-color: #666;
+        }
+        
+        .toggle-btn:hover {
+            border-color: #666;
+        }
     </style>
 </head>
 <body>
-    <h1>UKMI Polmed 2016 - Now</h1>
-    <div id="media-container"></div>
-    <div id="filename"></div>
-    <button id="prev">Sebelumnya</button>
-    <button id="next">Selanjutnya</button>
+    <!-- Floating Navigation -->
+    <div class="floating-nav">
+        <button class="floating-btn" id="prev">⬅️ Prev</button>
+        <button class="floating-btn" id="next">Next ➡️</button>
+    </div>
+    
+    <!-- Floating Controls -->
+    <div class="floating-controls">
+        <button class="floating-btn" onclick="toggleAutoplay()">⏯️ Auto</button>
+        <button class="floating-btn" onclick="toggleFullscreen()">🔳 Full</button>
+        <button class="floating-btn" onclick="shuffleMedia()">🔀 Shuffle</button>
+    </div>
+    
+    <!-- Title -->
+    <h1>UKMI Polmed 2016 - 2025</h1>
+    
+    <!-- View Toggle -->
+    <div class="view-toggle">
+        <button class="toggle-btn active" onclick="showSlideView()">📱 Slide View</button>
+        <button class="toggle-btn" onclick="showGridView()">🔲 Grid View</button>
+    </div>
+    
+    <!-- Slide View (Default) -->
+    <div id="slide-container">
+        <div id="media-container"></div>
+        <div id="filename"></div>
+        <!-- Navigation buttons dihilangkan karena sudah floating -->
+    </div>
+    
+    <!-- Grid View -->
+    <div id="grid-container" class="grid-container">
+        <h2>Semua Media</h2>
+        <div id="grid-view" class="grid-view">
+            <!-- Grid items will be populated by JavaScript -->
+        </div>
+    </div>
+    
     <script src="script.js"></script>
 </body>
 </html>
