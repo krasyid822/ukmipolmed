@@ -49,10 +49,10 @@ function createMessage(msg) {
     content.appendChild(mediaDiv);
   }
 
-  // Text
+  // Text dengan HTML rendering
   const textDiv = document.createElement('div');
   textDiv.className = 'wa-text';
-  textDiv.textContent = msg.text;
+  textDiv.innerHTML = msg.text; // Gunakan innerHTML untuk render HTML
   content.appendChild(textDiv);
 
   div.appendChild(content);

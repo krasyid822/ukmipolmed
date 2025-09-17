@@ -7,7 +7,8 @@
   <style>
     :root {
       /* Light theme (default) */
-      --bg-color: #efeae2;
+      --bg-color: #25D366;
+      /* --bg-color: #efeae2; */
       --bg-pattern: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" width="100" height="100" viewBox="0 0 100 100"><defs><pattern id="pattern" x="0" y="0" width="20" height="20" patternUnits="userSpaceOnUse"><circle cx="10" cy="10" r="0.5" fill="rgba(0,0,0,0.02)"/></pattern></defs><rect width="100" height="100" fill="url(%23pattern)"/></svg>');
       --text-color: #111b21;
       --bubble-bg: #ffffff;
@@ -46,6 +47,20 @@
       position: fixed;
       top: 20px;
       right: 20px;
+      background: var(--bubble-bg);
+      border: 1px solid var(--sender-color);
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 0.9em;
+      color: var(--text-color);
+      z-index: 1000;
+    }
+    
+    .audio-toggle {
+      position: fixed;
+      top: 20px;
+      right: 140px;
       background: var(--bubble-bg);
       border: 1px solid var(--sender-color);
       border-radius: 20px;
@@ -157,6 +172,43 @@
       line-height: 1.4;
       margin-top: 4px;
     }
+    
+    /* Styling untuk HTML elements dalam wa-text */
+    .wa-text b {
+      font-weight: bold;
+      color: var(--text-color);
+    }
+    
+    .wa-text i {
+      font-style: italic;
+      color: var(--text-color);
+    }
+    
+    .wa-text s {
+      text-decoration: line-through;
+      color: var(--sender-color);
+    }
+    
+    .wa-text code {
+      background: var(--sender-color);
+      color: var(--text-color);
+      padding: 2px 4px;
+      border-radius: 3px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+    }
+    
+    .wa-text pre {
+      background: var(--sender-color);
+      color: var(--text-color);
+      padding: 8px;
+      border-radius: 6px;
+      font-family: 'Courier New', monospace;
+      font-size: 0.85em;
+      margin: 4px 0;
+      white-space: pre-wrap;
+      overflow-x: auto;
+    }
     .wa-link {
       display: block;
       margin: 18px auto 0 auto;
@@ -186,14 +238,34 @@
   </style>
 </head>
 <body>
+  <button class="audio-toggle" onclick="toggleAudio()">🔊 Audio On</button>
   <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
   <h2>Apa kata mereka soal mentoring?</h2>
-  <audio id="bg-audio" src="what-they-said\media\energy-sport-rock-motivation-SBA-346721925-preview.mp3" autoplay loop hidden></audio>
+  <audio id="bg-audio" src="what-they-said\media\energy-sport-rock-motivation-SBA-346721925-preview.mp3" loop hidden></audio>
   <div class="carousel-container" id="carousel">
     <!-- Kontainer pesan WhatsApp akan diisi oleh JS -->
   </div>
   <a class="wa-link" href="https://forms.gle/e4e6egXHiRnyQVPV7" target="_blank">Daftar Mentoring di sini!</a>
   <script>
+    let audioPlaying = false;
+    
+    function toggleAudio() {
+      const audio = document.getElementById('bg-audio');
+      const button = document.querySelector('.audio-toggle');
+      
+      if (audioPlaying) {
+        audio.pause();
+        button.textContent = '🔇 Audio Off';
+        audioPlaying = false;
+        localStorage.setItem('audioEnabled', 'false');
+      } else {
+        audio.play();
+        button.textContent = '🔊 Audio On';
+        audioPlaying = true;
+        localStorage.setItem('audioEnabled', 'true');
+      }
+    }
+    
     function toggleTheme() {
       const body = document.body;
       const button = document.querySelector('.theme-toggle');
@@ -209,12 +281,39 @@
       }
     }
     
-    // Load saved theme (default light)
-    const savedTheme = localStorage.getItem('theme') || 'light';
-    if (savedTheme === 'dark') {
-      document.body.setAttribute('data-theme', 'dark');
-      document.querySelector('.theme-toggle').textContent = '☀️ Light Mode';
-    }
+    // Auto-start audio dan load saved preferences
+    window.addEventListener('DOMContentLoaded', function() {
+      const audio = document.getElementById('bg-audio');
+      const audioButton = document.querySelector('.audio-toggle');
+      const themeButton = document.querySelector('.theme-toggle');
+      
+      // Set volume
+      audio.volume = 0.25;
+      
+      // Load saved audio preference (default: auto-play)
+      const savedAudio = localStorage.getItem('audioEnabled');
+      if (savedAudio === 'false') {
+        audioButton.textContent = '🔇 Audio Off';
+        audioPlaying = false;
+      } else {
+        // Auto-play audio saat halaman dibuka
+        audio.play().then(() => {
+          audioButton.textContent = '🔊 Audio On';
+          audioPlaying = true;
+        }).catch(() => {
+          // Jika browser block autoplay
+          audioButton.textContent = '🔇 Audio Off';
+          audioPlaying = false;
+        });
+      }
+      
+      // Load saved theme
+      const savedTheme = localStorage.getItem('theme') || 'light';
+      if (savedTheme === 'dark') {
+        document.body.setAttribute('data-theme', 'dark');
+        themeButton.textContent = '☀️ Light Mode';
+      }
+    });
   </script>
   <script src="what-they-said\script.js"></script>
 </body>

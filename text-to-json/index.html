@@ -1,0 +1,156 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-  <h1>📝 WhatsApp Format to HTML/JSON Converter</h1>idth, initial-scale=1.0">
+  <title>WhatsApp Text to Messages.json Converter</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 20px;
+      background: #f5f5f5;
+    }
+    
+    h1 {
+      text-align: center;
+      color: #25d366;
+      margin-bottom: 30px;
+    }
+    
+    .container {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 20px;
+      height: 70vh;
+    }
+    
+    .input-section, .output-section {
+      background: white;
+      border-radius: 8px;
+      padding: 20px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+    
+    .section-title {
+      font-weight: bold;
+      margin-bottom: 15px;
+      color: #333;
+      font-size: 1.1em;
+    }
+    
+    textarea {
+      width: 100%;
+      height: calc(100% - 100px);
+      border: 1px solid #ddd;
+      border-radius: 6px;
+      padding: 15px;
+      font-family: monospace;
+      font-size: 14px;
+      resize: none;
+      outline: none;
+    }
+    
+    textarea:focus {
+      border-color: #25d366;
+    }
+    
+    .convert-btn {
+      background: #25d366;
+      color: white;
+      border: none;
+      padding: 12px 24px;
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 16px;
+      margin: 15px 0;
+      width: 100%;
+    }
+    
+    .convert-btn:hover {
+      background: #128c7e;
+    }
+    
+    .copy-btn {
+      background: #075e54;
+      color: white;
+      border: none;
+      padding: 8px 16px;
+      border-radius: 4px;
+      cursor: pointer;
+      float: right;
+      margin-bottom: 10px;
+    }
+    
+    .copy-btn:hover {
+      background: #064e46;
+    }
+    
+    .help {
+      background: #e8f5e8;
+      padding: 15px;
+      border-radius: 6px;
+      margin-bottom: 15px;
+      font-size: 14px;
+      line-height: 1.5;
+    }
+    
+    .help strong {
+      color: #25d366;
+    }
+    
+    @media (max-width: 768px) {
+      .container {
+        grid-template-columns: 1fr;
+        height: auto;
+      }
+      
+      textarea {
+        height: 300px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>WA to Escaped String Converter</h1>
+  
+  <div class="container">
+    <div class="input-section">
+      <div class="section-title">Input - Teks WhatsApp</div>
+      <!-- <div class="help">
+        <strong>Format input:</strong><br>
+        Masukkan teks dengan format WhatsApp.<br>
+        Akan dikonversi ke format HTML/JSON: *bold* → &lt;b&gt;bold&lt;/b&gt;, _italic_ → &lt;i&gt;italic&lt;/i&gt;<br>
+        Pisahkan setiap pesan dengan baris kosong.<br><br>
+        <strong>Contoh:</strong><br>
+        Bahwa *mentoring* adalah tentang _memulai perjalanan_ bersama..<br>
+        ~Berbagi~ suka dan `duka`..<br><br>
+        *AYO IKUT MENTORING*<br><br>
+        ```Gratis yg pasti...```
+      </div> -->
+      <textarea id="inputText" placeholder="Masukkan teks di sini...
+
+Contoh:
+Bahwa *mentoring* adalah tentang _memulai perjalanan_ bersama..
+~Berbagi~ suka dan `duka`..
+
+*AYO IKUT MENTORING*
+
+Langsung aja ya isi g-form pendaftaran nya..
+https://forms.gle/e4e6egXHiRnyQVPV7
+
+```Gratis yg pasti...```"></textarea>
+      <button class="convert-btn" onclick="convertText()">🔄 Convert to JSON</button>
+    </div>
+    
+    <div class="output-section">
+      <div class="section-title">Output - HTML/JSON Format</div>
+      <button class="copy-btn" onclick="copyToClipboard()">📋 Copy Text</button>
+      <textarea id="outputJson" readonly placeholder="HTML/JSON format output akan muncul di sini..."></textarea>
+    </div>
+  </div>
+
+  <script src="text-to-json/converter.js"></script>
+</body>
+</html>
