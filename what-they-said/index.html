@@ -60,7 +60,7 @@
     .audio-toggle {
       position: fixed;
       top: 20px;
-      right: 140px;
+      right: 340px;
       background: var(--bubble-bg);
       border: 1px solid var(--sender-color);
       border-radius: 20px;
@@ -69,6 +69,26 @@
       font-size: 0.9em;
       color: var(--text-color);
       z-index: 1000;
+    }
+    
+    .register-link {
+      position: fixed;
+      top: 20px;
+      right: 160px;
+      background: var(--heading-color);
+      border: 1px solid var(--heading-color);
+      border-radius: 20px;
+      padding: 8px 16px;
+      cursor: pointer;
+      font-size: 0.9em;
+      color: white;
+      text-decoration: none;
+      z-index: 1000;
+      transition: background 0.2s;
+    }
+    
+    .register-link:hover {
+      background: #00926b;
     }
     
     h2 {
@@ -84,6 +104,15 @@
       padding: 20px 0;
       margin-bottom: 24px;
       position: relative;
+      display: flex;
+    }
+    .carousel-track {
+      display: flex;
+      animation: scroll-infinite 30s linear infinite;
+    }
+    @keyframes scroll-infinite {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
     .wa-message {
       display: inline-block;
@@ -92,7 +121,7 @@
       max-width: 340px;
       vertical-align: top;
       position: relative;
-      animation: slide-horizontal 25s linear infinite;
+      flex-shrink: 0;
     }
     .wa-content {
       background: var(--bubble-bg);
@@ -113,9 +142,9 @@
       border-width: 0 8px 8px 0;
       border-color: transparent var(--tail-color) transparent transparent;
     }
-    @keyframes slide-horizontal {
-      0% { transform: translateX(100vw); }
-      100% { transform: translateX(-150vw); }
+    @keyframes scroll-infinite {
+      0% { transform: translateX(0); }
+      100% { transform: translateX(-50%); }
     }
     .wa-header {
       display: flex;
@@ -150,8 +179,9 @@
       flex: 1;
       min-width: calc(50% - 1px);
       max-width: calc(50% - 1px);
-      height: 130px;
-      object-fit: cover;
+      height: auto;
+      max-height: 200px;
+      object-fit: contain;
       background: var(--sender-color);
       border-radius: 4px;
     }
@@ -239,13 +269,15 @@
 </head>
 <body>
   <button class="audio-toggle" onclick="toggleAudio()">🔊 Audio On</button>
+  <a class="register-link" href="https://forms.gle/e4e6egXHiRnyQVPV7" target="_blank">📝 Daftar Mentoring</a>
   <button class="theme-toggle" onclick="toggleTheme()">🌙 Dark Mode</button>
-  <h2>Apa kata mereka soal mentoring?</h2>
-  <audio id="bg-audio" src="./media/energy-sport-rock-motivation-SBA-346721925-preview.mp3" loop hidden></audio>
+  <h2 style="margin-top: 100px; color: #d0e7ff;">Apa kata mereka soal mentoring?</h2>
+  <audio id="bg-audio" src="what-they-said/media/cyberpunk.mp3" loop hidden></audio>
   <div class="carousel-container" id="carousel">
-    <!-- Kontainer pesan WhatsApp akan diisi oleh JS -->
+    <div class="carousel-track" id="messagesCarousel">
+      <!-- Kontainer pesan WhatsApp akan diisi oleh JS -->
+    </div>
   </div>
-  <a class="wa-link" href="https://forms.gle/e4e6egXHiRnyQVPV7" target="_blank">Daftar Mentoring di sini!</a>
   <script>
     let audioPlaying = false;
     
@@ -315,6 +347,6 @@
       }
     });
   </script>
-  <script src="./script.js"></script>
+  <script src="what-they-said/what_they_said.js"></script>
 </body>
 </html>
