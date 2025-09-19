@@ -2,134 +2,262 @@
 <html lang="id">
 <head>
   <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-  <h1>📝 WhatsApp Format to HTML/JSON Converter</h1>idth, initial-scale=1.0">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>WhatsApp Text to Messages.json Converter</title>
   <style>
+    :root {
+      --wa-green: #25d366;
+      --wa-dark-green: #128c7e;
+      --wa-darkest: #075e54;
+      --bg-light: #f0f2f5;
+      --bg-white: #ffffff;
+      --text-dark: #3b4a54;
+      --text-light: #667781;
+      --border-light: #e9edef;
+      --shadow: 0 1px 3px rgba(11, 20, 26, 0.13);
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
     body {
-      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
-      max-width: 1200px;
-      margin: 0 auto;
-      padding: 20px;
-      background: #f5f5f5;
-    }
-    
-    h1 {
-      text-align: center;
-      color: #25d366;
-      margin-bottom: 30px;
-    }
-    
-    .container {
-      display: grid;
-      grid-template-columns: 1fr 1fr;
-      gap: 20px;
-      height: 70vh;
-    }
-    
-    .input-section, .output-section {
-      background: white;
-      border-radius: 8px;
-      padding: 20px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
-    }
-    
-    .section-title {
-      font-weight: bold;
-      margin-bottom: 15px;
-      color: #333;
-      font-size: 1.1em;
-    }
-    
-    textarea {
-      width: 100%;
-      height: calc(100% - 100px);
-      border: 1px solid #ddd;
-      border-radius: 6px;
-      padding: 15px;
-      font-family: monospace;
-      font-size: 14px;
-      resize: none;
-      outline: none;
-    }
-    
-    textarea:focus {
-      border-color: #25d366;
-    }
-    
-    .convert-btn {
-      background: #25d366;
-      color: white;
-      border: none;
-      padding: 12px 24px;
-      border-radius: 6px;
-      cursor: pointer;
-      font-size: 16px;
-      margin: 15px 0;
-      width: 100%;
-    }
-    
-    .convert-btn:hover {
-      background: #128c7e;
-    }
-    
-    .copy-btn {
-      background: #075e54;
-      color: white;
-      border: none;
-      padding: 8px 16px;
-      border-radius: 4px;
-      cursor: pointer;
-      float: right;
-      margin-bottom: 10px;
-    }
-    
-    .copy-btn:hover {
-      background: #064e46;
-    }
-    
-    .help {
-      background: #e8f5e8;
-      padding: 15px;
-      border-radius: 6px;
-      margin-bottom: 15px;
-      font-size: 14px;
+      font-family: 'Segoe UI', -apple-system, BlinkMacSystemFont, 'Roboto', sans-serif;
+      background: var(--bg-light);
+      color: var(--text-dark);
       line-height: 1.5;
     }
-    
-    .help strong {
-      color: #25d366;
+
+    .header {
+      background: var(--wa-green);
+      color: white;
+      padding: 20px 0;
+      text-align: center;
+      box-shadow: var(--shadow);
     }
-    
-    @media (max-width: 768px) {
-      .container {
+
+    .header h1 {
+      font-size: 1.8rem;
+      font-weight: 400;
+      margin-bottom: 8px;
+    }
+
+    .header p {
+      opacity: 0.9;
+      font-size: 0.95rem;
+    }
+
+    .container {
+      max-width: 1400px;
+      margin: 0 auto;
+      padding: 30px 20px;
+    }
+
+    .converter-grid {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 30px;
+      margin-bottom: 40px;
+    }
+
+    .panel {
+      background: var(--bg-white);
+      border-radius: 12px;
+      padding: 25px;
+      box-shadow: var(--shadow);
+      border: 1px solid var(--border-light);
+    }
+
+    .panel-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 20px;
+      padding-bottom: 15px;
+      border-bottom: 1px solid var(--border-light);
+    }
+
+    .panel-title {
+      font-size: 1.1rem;
+      font-weight: 500;
+      color: var(--text-dark);
+    }
+
+    .textarea-container {
+      position: relative;
+      height: 400px;
+    }
+
+    textarea {
+      width: 100%;
+      height: 100%;
+      border: 1px solid var(--border-light);
+      border-radius: 8px;
+      padding: 16px;
+      font-family: 'SF Mono', 'Monaco', 'Consolas', monospace;
+      font-size: 13px;
+      line-height: 1.4;
+      resize: none;
+      outline: none;
+      background: #fafbfc;
+      transition: all 0.2s ease;
+    }
+
+    textarea:focus {
+      border-color: var(--wa-green);
+      background: white;
+      box-shadow: 0 0 0 3px rgba(37, 211, 102, 0.1);
+    }
+
+    textarea::placeholder {
+      color: var(--text-light);
+    }
+
+    .action-bar {
+      display: flex;
+      gap: 12px;
+      margin-top: 20px;
+    }
+
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 12px 20px;
+      border: none;
+      border-radius: 8px;
+      font-size: 14px;
+      font-weight: 500;
+      cursor: pointer;
+      transition: all 0.2s ease;
+      text-decoration: none;
+    }
+
+    .btn-primary {
+      background: var(--wa-green);
+      color: white;
+      flex: 1;
+    }
+
+    .btn-primary:hover {
+      background: var(--wa-dark-green);
+      transform: translateY(-1px);
+    }
+
+    .btn-secondary {
+      background: var(--wa-darkest);
+      color: white;
+    }
+
+    .btn-secondary:hover {
+      background: #064e46;
+      transform: translateY(-1px);
+    }
+
+    .help-section {
+      background: linear-gradient(135deg, #e8f5e8 0%, #d4f1d4 100%);
+      border-radius: 12px;
+      padding: 25px;
+      border: 1px solid rgba(37, 211, 102, 0.2);
+    }
+
+    .help-title {
+      font-size: 1.2rem;
+      font-weight: 500;
+      color: var(--wa-darkest);
+      margin-bottom: 15px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .format-examples {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 15px;
+      margin-top: 20px;
+    }
+
+    .format-item {
+      background: white;
+      padding: 12px;
+      border-radius: 8px;
+      border-left: 4px solid var(--wa-green);
+      font-family: monospace;
+      font-size: 13px;
+    }
+
+    .format-item .input {
+      color: var(--text-light);
+      margin-bottom: 5px;
+    }
+
+    .format-item .output {
+      color: var(--text-dark);
+      font-weight: 500;
+    }
+
+    /* Responsive Design */
+    @media (max-width: 968px) {
+      .converter-grid {
         grid-template-columns: 1fr;
-        height: auto;
+        gap: 20px;
       }
-      
-      textarea {
+
+      .textarea-container {
         height: 300px;
+      }
+
+      .format-examples {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    @media (max-width: 640px) {
+      .container {
+        padding: 20px 15px;
+      }
+
+      .panel {
+        padding: 20px;
+      }
+
+      .header h1 {
+        font-size: 1.5rem;
+      }
+
+      .action-bar {
+        flex-direction: column;
+      }
+
+      .btn {
+        justify-content: center;
       }
     }
   </style>
 </head>
 <body>
-  <h1>WA to Escaped String Converter</h1>
-  
+  <!-- Header -->
+  <div class="header">
+    <h1>📝 WhatsApp Format Converter</h1>
+    <p>Convert WhatsApp formatted text to HTML/JSON for messages display</p>
+  </div>
+
   <div class="container">
-    <div class="input-section">
-      <div class="section-title">Input - Teks WhatsApp</div>
-      <!-- <div class="help">
-        <strong>Format input:</strong><br>
-        Masukkan teks dengan format WhatsApp.<br>
-        Akan dikonversi ke format HTML/JSON: *bold* → &lt;b&gt;bold&lt;/b&gt;, _italic_ → &lt;i&gt;italic&lt;/i&gt;<br>
-        Pisahkan setiap pesan dengan baris kosong.<br><br>
-        <strong>Contoh:</strong><br>
-        Bahwa *mentoring* adalah tentang _memulai perjalanan_ bersama..<br>
-        ~Berbagi~ suka dan `duka`..<br><br>
-        *AYO IKUT MENTORING*<br><br>
-        ```Gratis yg pasti...```
-      </div> -->
-      <textarea id="inputText" placeholder="Masukkan teks di sini...
+    <!-- Main Converter -->
+    <div class="converter-grid">
+      <!-- Input Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">💬 Input - WhatsApp Text</h3>
+        </div>
+        
+        <div class="textarea-container">
+          <textarea 
+            id="inputText" 
+            placeholder="Masukkan teks WhatsApp di sini...
 
 Contoh:
 Bahwa *mentoring* adalah tentang _memulai perjalanan_ bersama..
@@ -138,19 +266,69 @@ Bahwa *mentoring* adalah tentang _memulai perjalanan_ bersama..
 *AYO IKUT MENTORING*
 
 Langsung aja ya isi g-form pendaftaran nya..
-https://forms.gle/e4e6egXHiRnyQVPV7
 
-```Gratis yg pasti...```"></textarea>
-      <button class="convert-btn" onclick="convertText()">🔄 Convert to JSON</button>
+```Gratis yg pasti...```"
+          ></textarea>
+        </div>
+        
+        <div class="action-bar">
+          <button class="btn btn-primary" onclick="convertText()">
+            🔄 Convert to JSON
+          </button>
+        </div>
+      </div>
+
+      <!-- Output Panel -->
+      <div class="panel">
+        <div class="panel-header">
+          <h3 class="panel-title">⚡ Output - JSON Format</h3>
+          <button class="btn btn-secondary" onclick="copyToClipboard()">
+            📋 Copy
+          </button>
+        </div>
+        
+        <div class="textarea-container">
+          <textarea 
+            id="outputJson" 
+            readonly 
+            placeholder="JSON output akan muncul di sini setelah konversi..."
+          ></textarea>
+        </div>
+      </div>
     </div>
-    
-    <div class="output-section">
-      <div class="section-title">Output - HTML/JSON Format</div>
-      <button class="copy-btn" onclick="copyToClipboard()">📋 Copy Text</button>
-      <textarea id="outputJson" readonly placeholder="HTML/JSON format output akan muncul di sini..."></textarea>
+
+    <!-- Help Section -->
+    <div class="help-section">
+      <h3 class="help-title">
+        💡 Format Guide
+      </h3>
+      <p>Converter ini mengubah format WhatsApp menjadi HTML tags untuk tampilan yang lebih kaya:</p>
+      
+      <div class="format-examples">
+        <div class="format-item">
+          <div class="input">*text*</div>
+          <div class="output">&lt;b&gt;text&lt;/b&gt;</div>
+        </div>
+        <div class="format-item">
+          <div class="input">_text_</div>
+          <div class="output">&lt;i&gt;text&lt;/i&gt;</div>
+        </div>
+        <div class="format-item">
+          <div class="input">~text~</div>
+          <div class="output">&lt;s&gt;text&lt;/s&gt;</div>
+        </div>
+        <div class="format-item">
+          <div class="input">`text`</div>
+          <div class="output">&lt;code&gt;text&lt;/code&gt;</div>
+        </div>
+        <div class="format-item">
+          <div class="input">```text```</div>
+          <div class="output">&lt;pre&gt;text&lt;/pre&gt;</div>
+        </div>
+      </div>
     </div>
   </div>
 
-  <script src="text-to-json/converter.js"></script>
+  <script src="converter.js"></script>
 </body>
 </html>

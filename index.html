@@ -22,6 +22,7 @@
             display: flex;
             gap: 10px;
             z-index: 1000;
+            flex-wrap: wrap;
         }
         
         .floating-nav {
@@ -31,6 +32,7 @@
             display: flex;
             gap: 10px;
             z-index: 1000;
+            flex-wrap: wrap;
         }
         
         .floating-btn {
@@ -44,11 +46,73 @@
             backdrop-filter: blur(10px);
             transition: all 0.3s ease;
             box-shadow: 0 4px 12px rgba(0,0,0,0.3);
+            white-space: nowrap;
         }
         
         .floating-btn:hover {
             background: rgba(102, 102, 102, 0.9);
             transform: translateY(-2px);
+        }
+        
+        /* Media Query untuk Portrait Mode */
+        @media (orientation: portrait) and (max-width: 768px) {
+            .floating-controls {
+                top: 10px;
+                right: 10px;
+                flex-direction: column;
+                gap: 5px;
+                max-width: 100px;
+            }
+            
+            .floating-nav {
+                top: 10px;
+                left: 10px;
+                flex-direction: column;
+                gap: 5px;
+                max-width: 100px;
+            }
+            
+            .floating-btn {
+                padding: 8px 12px;
+                font-size: 0.8em;
+                text-align: center;
+            }
+            
+            h1 {
+                margin-top: 120px;
+                font-size: 1.5em;
+            }
+            
+            #media-container {
+                margin-top: 20px;
+            }
+        }
+        
+        /* Media Query untuk Mobile Portrait */
+        @media (max-width: 480px) and (orientation: portrait) {
+            .floating-controls {
+                right: 5px;
+                top: 5px;
+                max-width: 80px;
+            }
+            
+            .floating-nav {
+                left: 5px;
+                top: 5px;
+                max-width: 80px;
+            }
+            
+            .floating-btn {
+                padding: 6px 8px;
+                font-size: 0.7em;
+                border-radius: 15px;
+            }
+            
+            h1 {
+                margin-top: 140px;
+                font-size: 1.2em;
+                padding: 0 10px;
+            }
         }
         
         /* Media Container */
