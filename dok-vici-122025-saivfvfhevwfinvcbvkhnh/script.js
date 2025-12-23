@@ -128,7 +128,7 @@ if (isMediaPlayerPage) {
             img.onerror = () => {
                 mediaContainer.innerHTML = '<div style="color:#fff;">Error loading image</div>';
             };
-        } else if (file.match(/\.(mp4|webm)$/i)) {
+        } else if (file.match(/\.(mp4|webm|mov)$/i)) {
             const video = document.createElement('video');
             video.src = file;
             video.controls = true;
