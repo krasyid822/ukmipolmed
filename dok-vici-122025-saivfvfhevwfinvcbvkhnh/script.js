@@ -23,6 +23,23 @@ if (isMediaPlayerPage) {
     const gridContainer = document.getElementById('grid-container');
     const gridView = document.getElementById('grid-view');
     const autoNotification = document.getElementById('auto-notification');
+
+    // IntersectionObserver for lazy-loading grid images
+    const gridObserverOptions = { root: null, rootMargin: '300px', threshold: 0.01 };
+    const gridImageObserver = new IntersectionObserver((entries) => {
+        entries.forEach(entry => {
+            if (!entry.isIntersecting) return;
+            const img = entry.target;
+            const src = img.dataset.src;
+            if (src) {
+                // use async decoding and set src when near viewport
+                img.decoding = 'async';
+                img.src = src;
+                img.removeAttribute('data-src');
+            }
+            gridImageObserver.unobserve(img);
+        });
+    }, gridObserverOptions);
     
     console.log('Elements loaded:');
     console.log('- slideContainer:', slideContainer);
@@ -164,6 +181,7 @@ if (isMediaPlayerPage) {
         if (!gridView) return;
         
         gridView.innerHTML = '';
+        const frag = document.createDocumentFragment();
         mediaFiles.forEach((file, index) => {
             const gridItem = document.createElement('div');
             gridItem.className = 'grid-item';
@@ -181,10 +199,12 @@ if (isMediaPlayerPage) {
             
             if (file.match(/\.(jpg|jpeg|png|webp)$/i)) {
                 const img = document.createElement('img');
-                img.src = file; // Load immediately for better UX
+                // Use tiny placeholder and defer real src via data-src + IntersectionObserver
+                img.src = 'data:image/gif;base64,R0lGODlhAQABAIAAAAAAAP///ywAAAAAAQABAAACAUwAOw==';
+                img.dataset.src = file;
                 img.loading = 'lazy';
                 img.alt = `Media ${index + 1}`;
-                
+
                 // Add error handler for broken images
                 img.onerror = () => {
                     img.style.display = 'none';
@@ -193,34 +213,31 @@ if (isMediaPlayerPage) {
                     placeholder.innerHTML = '🖼️<div style="font-size:0.3em;margin-top:10px;">Image Error</div>';
                     gridItem.appendChild(placeholder);
                 };
-                
+
                 gridItem.appendChild(img);
+
+                // Observe the image for lazy loading
+                try {
+                    gridImageObserver.observe(img);
+                } catch (e) {
+                    // Fallback: set src immediately if observer fails
+                    img.src = file;
+                }
             } else if (file.match(/\.(mp4|webm)$/i)) {
-                const video = document.createElement('video');
-                video.src = file;
-                video.muted = true;
-                video.preload = 'metadata'; // Load metadata to show first frame
-                video.playsInline = true;
-                
-                // Add poster/placeholder
+                // For grid view we avoid creating <video> elements (heavy). Use a lightweight placeholder instead.
                 const placeholder = document.createElement('div');
-                placeholder.style.cssText = 'position:absolute;width:100%;height:100%;background:#333;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2em;';
+                placeholder.style.cssText = 'position:absolute;width:100%;height:100%;background:#222;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2em;';
                 placeholder.innerHTML = '▶️';
                 gridItem.style.position = 'relative';
                 gridItem.appendChild(placeholder);
-                
-                // Show video thumbnail when loaded
-                video.onloadeddata = () => {
-                    placeholder.remove();
-                };
-                
-                // Error handler for broken videos
-                video.onerror = () => {
-                    placeholder.innerHTML = '🎬<div style="font-size:0.3em;margin-top:10px;">Video Error</div>';
-                    placeholder.style.color = '#888';
-                };
-                
-                gridItem.appendChild(video);
+
+                // Optionally show a small file label in the middle-bottom
+                const miniLabel = document.createElement('div');
+                miniLabel.style.cssText = 'position:absolute;bottom:8px;left:8px;right:8px;color:#ddd;font-size:0.75em;text-align:center;pointer-events:none;';
+                miniLabel.textContent = 'Video';
+                gridItem.appendChild(miniLabel);
+
+                // We will load the video only when user opens the item (slide view)
             }
 
             // Add per-item download button (stopPropagation so click opens slide only)
@@ -239,9 +256,10 @@ if (isMediaPlayerPage) {
             overlay.textContent = `${index + 1}. ${file.split('/').pop()}`;
             gridItem.appendChild(overlay);
             
-            gridView.appendChild(gridItem);
+            frag.appendChild(gridItem);
         });
-        
+        gridView.appendChild(frag);
+
         // Scroll to active item after grid is populated
         scrollToActiveItem();
     }
