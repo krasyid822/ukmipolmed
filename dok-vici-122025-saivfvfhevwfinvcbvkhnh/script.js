@@ -316,7 +316,7 @@ if (isMediaPlayerPage) {
             autoplayEnabled = false;
             autoWasDisabledInGrid = true;
             const btn = document.querySelector('.floating-controls .floating-btn');
-            if (btn) btn.textContent = '▶️ Manual';
+            if (btn) btn.textContent = '⏯️ Manual';
         }
         
         populateGridView();
@@ -372,7 +372,7 @@ if (isMediaPlayerPage) {
     function toggleAutoplay() {
         autoplayEnabled = !autoplayEnabled;
         const btn = document.querySelector('.floating-controls .floating-btn');
-        btn.textContent = autoplayEnabled ? '⏸️ Auto' : '▶️ Manual';
+        btn.textContent = autoplayEnabled ? '⏸️ Auto' : '⏯️ Manual';
     }
     
     function toggleFullscreen() {
