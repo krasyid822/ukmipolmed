@@ -170,6 +170,26 @@ if (isMediaPlayerPage) {
             populateGridView();
         }
     }
+
+    // Download all media files sequentially
+    async function downloadAll() {
+        if (!Array.isArray(mediaFiles) || mediaFiles.length === 0) return;
+        const btn = document.querySelector('.floating-controls .floating-btn[onclick="downloadAll()"]');
+        const originalText = btn ? btn.textContent : null;
+        if (btn) btn.textContent = '⬇️ Downloading...';
+        for (let i = 0; i < mediaFiles.length; i++) {
+            const file = mediaFiles[i];
+            const a = document.createElement('a');
+            a.href = file;
+            a.setAttribute('download', file.split('/').pop());
+            document.body.appendChild(a);
+            a.click();
+            a.remove();
+            if (btn) btn.textContent = `⬇️ ${i + 1}/${mediaFiles.length}`;
+            await new Promise(r => setTimeout(r, 400));
+        }
+        if (btn && originalText) btn.textContent = originalText;
+    }
     
     // Make functions global so they can be called from HTML
     window.showSlideView = showSlideView;
@@ -177,6 +197,7 @@ if (isMediaPlayerPage) {
     window.toggleAutoplay = toggleAutoplay;
     window.toggleFullscreen = toggleFullscreen;
     window.shuffleMedia = shuffleMedia;
+    window.downloadAll = downloadAll;
 
     // Event handlers
     if (prevBtn) {
