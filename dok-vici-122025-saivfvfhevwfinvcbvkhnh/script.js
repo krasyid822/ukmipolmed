@@ -5,9 +5,15 @@ const isMediaPlayerPage = document.getElementById('media-container') !== null;
 if (isMediaPlayerPage) {
     // Kode untuk media player
     let mediaFiles = [];
+    let allMediaFiles = []; // Store original list
+    let notPriorityFiles = []; // Store not-priority list
+    let priorityFiles = []; // Store priority list
     let currentIndex = 0;
     let autoplayEnabled = true;
     let currentView = 'slide'; // 'slide' or 'grid'
+    let hideNonPriority = true; // Default aktif
+    let wakeLock = null; // For keeping screen awake
+    let autoWasDisabledInGrid = false; // Track if auto was disabled when switching to grid
     
     const mediaContainer = document.getElementById('media-container');
     const filenameDiv = document.getElementById('filename');
@@ -16,6 +22,78 @@ if (isMediaPlayerPage) {
     const slideContainer = document.getElementById('slide-container');
     const gridContainer = document.getElementById('grid-container');
     const gridView = document.getElementById('grid-view');
+    const autoNotification = document.getElementById('auto-notification');
+    
+    console.log('Elements loaded:');
+    console.log('- slideContainer:', slideContainer);
+    console.log('- gridContainer:', gridContainer);
+    console.log('- autoNotification:', autoNotification);
+
+    // Function to request wake lock (keep screen awake)
+    async function requestWakeLock() {
+        try {
+            if ('wakeLock' in navigator) {
+                wakeLock = await navigator.wakeLock.request('screen');
+                console.log('Wake Lock aktif - layar akan tetap menyala');
+                
+                // Re-acquire wake lock if visibility changes
+                document.addEventListener('visibilitychange', async () => {
+                    if (wakeLock !== null && document.visibilityState === 'visible') {
+                        wakeLock = await navigator.wakeLock.request('screen');
+                    }
+                });
+            } else {
+                console.log('Wake Lock API tidak didukung di browser ini');
+            }
+        } catch (err) {
+            console.error('Error requesting wake lock:', err);
+        }
+    }
+    
+    // Filter and sort media based on priority and not-priority lists
+    function filterMedia() {
+        let filteredFiles;
+        
+        // Filter berdasarkan not-priority jika diaktifkan
+        if (hideNonPriority && notPriorityFiles.length > 0) {
+            filteredFiles = allMediaFiles.filter(file => !notPriorityFiles.includes(file));
+        } else {
+            filteredFiles = [...allMediaFiles];
+        }
+        
+        // Sort: priority files di awal, sisanya di belakang
+        if (priorityFiles.length > 0) {
+            const priorityFilesInList = filteredFiles.filter(file => priorityFiles.includes(file));
+            const nonPriorityFilesInList = filteredFiles.filter(file => !priorityFiles.includes(file));
+            
+            // Urutkan priority files sesuai urutan di priority.json
+            const sortedPriority = priorityFiles.filter(file => priorityFilesInList.includes(file));
+            
+            mediaFiles = [...sortedPriority, ...nonPriorityFilesInList];
+        } else {
+            mediaFiles = filteredFiles;
+        }
+        
+        // Reset index if out of bounds
+        if (currentIndex >= mediaFiles.length) {
+            currentIndex = 0;
+        }
+    }
+    
+    // Toggle non-priority filter
+    function toggleNonPriorityFilter() {
+        const checkbox = document.getElementById('hideNonPriority');
+        hideNonPriority = checkbox.checked;
+        filterMedia();
+        
+        if (currentView === 'slide') {
+            showMedia(currentIndex);
+        } else {
+            populateGridView();
+        }
+    }
+    
+    window.toggleNonPriorityFilter = toggleNonPriorityFilter;
 
     function showMedia(index) {
         if (mediaFiles.length === 0) return;
@@ -26,7 +104,12 @@ if (isMediaPlayerPage) {
         
         currentIndex = index;
         const file = mediaFiles[index];
-        mediaContainer.innerHTML = '';
+        
+        // Update active grid item if grid is populated
+        updateActiveGridItem();
+        
+        // Show skeleton loader
+        mediaContainer.innerHTML = '<div class="skeleton-loader"></div>';
         
         if (filenameDiv) {
             filenameDiv.textContent = `${index + 1}/${mediaFiles.length} - ${file}`;
@@ -36,38 +119,34 @@ if (isMediaPlayerPage) {
             const img = document.createElement('img');
             img.src = file;
             img.onload = () => {
+                mediaContainer.innerHTML = '';
+                mediaContainer.appendChild(img);
                 if (autoplayEnabled) {
                     setTimeout(nextMedia, 3000);
                 }
             };
-            mediaContainer.appendChild(img);
-            // Tambahkan tombol unduh untuk gambar
-            const downloadBtn = document.createElement('a');
-            downloadBtn.className = 'download-btn';
-            downloadBtn.href = file;
-            downloadBtn.setAttribute('download', file.split('/').pop());
-            downloadBtn.textContent = '⬇️ Download';
-            mediaContainer.appendChild(downloadBtn);
+            img.onerror = () => {
+                mediaContainer.innerHTML = '<div style="color:#fff;">Error loading image</div>';
+            };
         } else if (file.match(/\.(mp4|webm)$/i)) {
             const video = document.createElement('video');
             video.src = file;
             video.controls = true;
             video.autoplay = autoplayEnabled;
+            video.onloadeddata = () => {
+                mediaContainer.innerHTML = '';
+                mediaContainer.appendChild(video);
+            };
+            video.onerror = () => {
+                mediaContainer.innerHTML = '<div style="color:#fff;">Error loading video</div>';
+            };
             video.onended = () => {
                 if (autoplayEnabled) {
                     nextMedia();
                 }
             };
-            mediaContainer.appendChild(video);
-            // Tambahkan tombol unduh untuk video
-            const downloadBtn = document.createElement('a');
-            downloadBtn.className = 'download-btn';
-            downloadBtn.href = file;
-            downloadBtn.setAttribute('download', file.split('/').pop());
-            downloadBtn.textContent = '⬇️ Download';
-            mediaContainer.appendChild(downloadBtn);
         } else {
-            mediaContainer.textContent = 'Format tidak didukung: ' + file;
+            mediaContainer.innerHTML = '<div style="color:#fff;">Format tidak didukung: ' + file + '</div>';
         }
     }
 
@@ -88,6 +167,13 @@ if (isMediaPlayerPage) {
         mediaFiles.forEach((file, index) => {
             const gridItem = document.createElement('div');
             gridItem.className = 'grid-item';
+            gridItem.dataset.index = index; // Store index for highlighting
+            
+            // Highlight current item
+            if (index === currentIndex) {
+                gridItem.classList.add('active');
+            }
+            
             gridItem.onclick = () => {
                 showSlideView();
                 showMedia(index);
@@ -95,33 +181,102 @@ if (isMediaPlayerPage) {
             
             if (file.match(/\.(jpg|jpeg|png|webp)$/i)) {
                 const img = document.createElement('img');
-                img.src = file;
+                img.src = file; // Load immediately for better UX
                 img.loading = 'lazy';
+                img.alt = `Media ${index + 1}`;
+                
+                // Add error handler for broken images
+                img.onerror = () => {
+                    img.style.display = 'none';
+                    const placeholder = document.createElement('div');
+                    placeholder.style.cssText = 'width:100%;height:100%;background:#333;display:flex;align-items:center;justify-content:center;color:#888;font-size:2em;flex-direction:column;';
+                    placeholder.innerHTML = '🖼️<div style="font-size:0.3em;margin-top:10px;">Image Error</div>';
+                    gridItem.appendChild(placeholder);
+                };
+                
                 gridItem.appendChild(img);
             } else if (file.match(/\.(mp4|webm)$/i)) {
                 const video = document.createElement('video');
                 video.src = file;
                 video.muted = true;
-                video.loading = 'lazy';
+                video.preload = 'metadata'; // Load metadata to show first frame
+                video.playsInline = true;
+                
+                // Add poster/placeholder
+                const placeholder = document.createElement('div');
+                placeholder.style.cssText = 'position:absolute;width:100%;height:100%;background:#333;display:flex;align-items:center;justify-content:center;color:#fff;font-size:2em;';
+                placeholder.innerHTML = '▶️';
+                gridItem.style.position = 'relative';
+                gridItem.appendChild(placeholder);
+                
+                // Show video thumbnail when loaded
+                video.onloadeddata = () => {
+                    placeholder.remove();
+                };
+                
+                // Error handler for broken videos
+                video.onerror = () => {
+                    placeholder.innerHTML = '🎬<div style="font-size:0.3em;margin-top:10px;">Video Error</div>';
+                    placeholder.style.color = '#888';
+                };
+                
                 gridItem.appendChild(video);
             }
+
+            // Add per-item download button (stopPropagation so click opens slide only)
+            const dlBtn = document.createElement('button');
+            dlBtn.className = 'grid-download';
+            dlBtn.title = 'Download';
+            dlBtn.innerHTML = '⬇️';
+            dlBtn.onclick = (e) => {
+                e.stopPropagation();
+                downloadFile(file);
+            };
+            gridItem.appendChild(dlBtn);
             
             const overlay = document.createElement('div');
             overlay.className = 'overlay';
             overlay.textContent = `${index + 1}. ${file.split('/').pop()}`;
             gridItem.appendChild(overlay);
-
-            // Tombol unduh kecil untuk setiap item grid
-            const dl = document.createElement('a');
-            dl.className = 'grid-download';
-            dl.href = file;
-            dl.setAttribute('download', file.split('/').pop());
-            dl.textContent = '⬇️';
-            dl.onclick = (e) => { e.stopPropagation(); };
-            gridItem.appendChild(dl);
             
             gridView.appendChild(gridItem);
         });
+        
+        // Scroll to active item after grid is populated
+        scrollToActiveItem();
+    }
+    
+    // Function to scroll to active grid item
+    function scrollToActiveItem() {
+        if (currentView !== 'grid') return;
+        
+        setTimeout(() => {
+            const activeItem = gridView.querySelector('.grid-item.active');
+            if (activeItem) {
+                activeItem.scrollIntoView({
+                    behavior: 'smooth',
+                    block: 'center',
+                    inline: 'center'
+                });
+            }
+        }, 100); // Small delay to ensure grid is rendered
+    }
+    
+    // Update active highlight when navigating in slide view
+    function updateActiveGridItem() {
+        if (!gridView) return;
+        
+        // Remove previous active class
+        const previousActive = gridView.querySelector('.grid-item.active');
+        if (previousActive) {
+            previousActive.classList.remove('active');
+        }
+        
+        // Add active class to current item
+        const currentItem = gridView.querySelector(`.grid-item[data-index="${currentIndex}"]`);
+        if (currentItem) {
+            currentItem.classList.add('active');
+        }
     }
     
     // View switching functions
@@ -129,6 +284,16 @@ if (isMediaPlayerPage) {
         currentView = 'slide';
         slideContainer.style.display = 'block';
         gridContainer.style.display = 'none';
+        
+        console.log('showSlideView called');
+        console.log('autoWasDisabledInGrid:', autoWasDisabledInGrid);
+        console.log('autoplayEnabled:', autoplayEnabled);
+        
+        // Tampilkan notifikasi kecil jika auto sempat dimatikan di grid view
+        if (autoWasDisabledInGrid && !autoplayEnabled) {
+            console.log('Conditions met, calling showAutoNotification');
+            showAutoNotification();
+        }
         
         // Update toggle buttons
         document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
@@ -139,12 +304,69 @@ if (isMediaPlayerPage) {
         currentView = 'grid';
         slideContainer.style.display = 'none';
         gridContainer.style.display = 'block';
+        
+        console.log('showGridView called');
+        
+        // Sembunyikan notifikasi jika sedang tampil
+        hideAutoNotification();
+        
+        // Matikan autoplay saat pindah ke grid view
+        if (autoplayEnabled) {
+            console.log('Disabling autoplay');
+            autoplayEnabled = false;
+            autoWasDisabledInGrid = true;
+            const btn = document.querySelector('.floating-controls .floating-btn');
+            if (btn) btn.textContent = '▶️ Manual';
+        }
+        
         populateGridView();
+        
+        // Scroll to current active item
+        scrollToActiveItem();
         
         // Update toggle buttons
         document.querySelectorAll('.toggle-btn').forEach(btn => btn.classList.remove('active'));
         document.querySelectorAll('.toggle-btn')[1].classList.add('active');
     }
+    
+    // Auto notification functions
+    function showAutoNotification() {
+        console.log('showAutoNotification called');
+        console.log('autoNotification element:', autoNotification);
+        if (autoNotification) {
+            autoNotification.classList.add('show');
+            console.log('Notification shown');
+            // Auto hide after 5 seconds
+            setTimeout(() => {
+                hideAutoNotification();
+            }, 5000);
+        } else {
+            console.error('autoNotification element not found!');
+        }
+    }
+    
+    function hideAutoNotification() {
+        if (autoNotification) {
+            autoNotification.classList.remove('show');
+        }
+    }
+    
+    function enableAutoFromNotification() {
+        autoplayEnabled = true;
+        const btn = document.querySelector('.floating-controls .floating-btn');
+        if (btn) btn.textContent = '⏸️ Auto';
+        hideAutoNotification();
+        autoWasDisabledInGrid = false;
+        
+        // Start autoplay immediately if viewing an image
+        const currentMedia = mediaContainer.querySelector('img');
+        if (currentMedia) {
+            setTimeout(nextMedia, 3000);
+        }
+    }
+    
+    // Make notification functions global
+    window.enableAutoFromNotification = enableAutoFromNotification;
     
     // Floating controls functions
     function toggleAutoplay() {
@@ -170,26 +392,43 @@ if (isMediaPlayerPage) {
             populateGridView();
         }
     }
-
-    // Download all media files sequentially
-    async function downloadAll() {
-        if (!Array.isArray(mediaFiles) || mediaFiles.length === 0) return;
-        const btn = document.querySelector('.floating-controls .floating-btn[onclick="downloadAll()"]');
-        const originalText = btn ? btn.textContent : null;
-        if (btn) btn.textContent = '⬇️ Downloading...';
-        for (let i = 0; i < mediaFiles.length; i++) {
-            const file = mediaFiles[i];
+    
+    // Download helper: create an anchor and click to download the file
+    function downloadFile(file) {
+        try {
             const a = document.createElement('a');
             a.href = file;
-            a.setAttribute('download', file.split('/').pop());
+            // Use last path segment as filename (strip query string)
+            const parts = file.split('/');
+            let filename = parts.length ? parts[parts.length - 1] : 'media';
+            filename = filename.split('?')[0];
+            a.download = filename || 'media';
             document.body.appendChild(a);
             a.click();
             a.remove();
-            if (btn) btn.textContent = `⬇️ ${i + 1}/${mediaFiles.length}`;
-            await new Promise(r => setTimeout(r, 400));
+        } catch (err) {
+            console.error('Error downloading file:', err);
         }
-        if (btn && originalText) btn.textContent = originalText;
     }
+
+    function downloadCurrentMedia() {
+        if (!mediaFiles || mediaFiles.length === 0) return;
+        const file = mediaFiles[currentIndex];
+        if (file) downloadFile(file);
+    }
+
+    // Download all media files sequentially with a small delay to reduce browser blocking
+    function downloadAll() {
+        if (!mediaFiles || mediaFiles.length === 0) return;
+        // Use a small interval between downloads to avoid some browser restrictions
+        const delay = 250; // ms
+        mediaFiles.forEach((file, idx) => {
+            setTimeout(() => {
+                downloadFile(file);
+            }, idx * delay);
+        });
+    }
+
     
     // Make functions global so they can be called from HTML
     window.showSlideView = showSlideView;
@@ -197,6 +436,7 @@ if (isMediaPlayerPage) {
     window.toggleAutoplay = toggleAutoplay;
     window.toggleFullscreen = toggleFullscreen;
     window.shuffleMedia = shuffleMedia;
+    window.downloadCurrentMedia = downloadCurrentMedia;
     window.downloadAll = downloadAll;
 
     // Event handlers
@@ -235,20 +475,28 @@ if (isMediaPlayerPage) {
     });
 
     // Ambil media.json dan mulai
-    fetch('media.json')
-        .then(res => res.json())
-        .then(files => {
-            mediaFiles = files;
-            if (mediaContainer) {
-                showMedia(currentIndex);
-                populateGridView(); // Pre-populate grid for faster switching
-            } else {
-                console.error('HTML tidak memiliki element dengan id "media-container"');
-            }
-        })
-        .catch(error => {
-            console.error('Error loading media.json:', error);
-        });
+    Promise.all([
+        fetch('media.json').then(res => res.json()),
+        fetch('not-priority.json').then(res => res.json()).catch(() => []),
+        fetch('priority.json').then(res => res.json()).catch(() => [])
+    ])
+    .then(([media, notPriority, priority]) => {
+        allMediaFiles = media;
+        notPriorityFiles = notPriority;
+        priorityFiles = priority;
+        filterMedia();
+        
+        if (mediaContainer) {
+            showMedia(currentIndex);
+            populateGridView(); // Pre-populate grid for faster switching
+            requestWakeLock(); // Request wake lock to keep screen awake
+        } else {
+            console.error('HTML tidak memiliki element dengan id "media-container"');
+        }
+    })
+    .catch(error => {
+        console.error('Error loading media files:', error);
+    });
 } else {
     // Halaman ini bukan media player, skip script ini
     console.log('Script media player tidak dijalankan - bukan halaman media player');
