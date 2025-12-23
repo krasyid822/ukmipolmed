@@ -5,7 +5,7 @@ import json
 folder = os.path.dirname(__file__)
 
 # Ekstensi media yang didukung
-media_exts = {'.jpg', '.jpeg', '.png', '.webp', '.mp4', '.webm'}
+media_exts = {'.jpg', '.jpeg', '.png', '.webp', '.mp4', '.webm', '.mov'}
 
 files = [f for f in os.listdir(folder) if os.path.splitext(f)[1].lower() in media_exts]
 
