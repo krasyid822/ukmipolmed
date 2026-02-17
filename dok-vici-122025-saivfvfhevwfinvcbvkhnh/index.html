@@ -502,59 +502,165 @@
                 font-size: 0.9em;
             }
         }
+
+        /* Privacy Gate */
+        body.locked { overflow: hidden; }
+        #protected-content { filter: blur(18px); pointer-events: none; user-select: none; transition: filter 0.3s ease; }
+        body.unlocked #protected-content { filter: none; pointer-events: auto; user-select: auto; }
+        .privacy-overlay {
+            position: fixed;
+            inset: 0;
+            background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.08), rgba(0,0,0,0.75)), rgba(0,0,0,0.8);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            z-index: 2000;
+        }
+        .privacy-card {
+            background: rgba(34,34,34,0.9);
+            border: 1px solid #444;
+            border-radius: 16px;
+            padding: 20px;
+            max-width: 420px;
+            width: 100%;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.45);
+        }
+        .privacy-card h2 { margin: 0 0 10px; font-size: 1.2em; }
+        .privacy-card p { margin: 0 0 14px; color: #ddd; line-height: 1.5; }
+        .gate-form { display: flex; flex-direction: column; gap: 12px; }
+        .blank-input {
+            padding: 12px;
+            border: none;
+            border-bottom: 2px solid #fff;
+            background: rgba(255,255,255,0.04);
+            color: #fff;
+            font-size: 1.05em;
+            letter-spacing: 0.2em;
+            text-transform: capitalize;
+            outline: none;
+        }
+        .blank-input::placeholder { color: #aaa; letter-spacing: 0.25em; }
+        .gate-btn {
+            padding: 12px;
+            border: none;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #ff9800, #ffb74d);
+            color: #0d0d0d;
+            font-weight: 700;
+            cursor: pointer;
+            box-shadow: 0 8px 20px rgba(255,152,0,0.35);
+            transition: transform 0.2s ease, box-shadow 0.2s ease;
+        }
+        .gate-btn:hover { transform: translateY(-1px); box-shadow: 0 10px 24px rgba(255,152,0,0.45); }
+        .gate-error { color: #ffb3b3; font-size: 0.95em; min-height: 18px; }
     </style>
 </head>
-<body>
-    <!-- Floating Navigation -->
-    <div class="floating-nav">
-        <button class="floating-btn" id="prev">⬅️ Prev</button>
-        <button class="floating-btn" id="next">Next ➡️</button>
-    </div>
-    
-    <!-- Floating Controls -->
-    <div class="floating-controls">
-        <button class="floating-btn" onclick="toggleAutoplay()">⏯️ Auto</button>
-        <button class="floating-btn" onclick="toggleFullscreen()">🔳 Full</button>
-        <button class="floating-btn" onclick="shuffleMedia()">🔀 Shuffle</button>
-        <button class="floating-btn download-all" onclick="downloadAll()">📦 Download All</button>
-    </div>
-    
-    <!-- Auto Mode Notification - Separate from floating controls -->
-    <div id="auto-notification" class="auto-notification" onclick="enableAutoFromNotification()">
-        ⏯️ Klik untuk aktifkan mode auto
-    </div>
-    
-    <!-- Title -->
-    <h1>DOKUMENTASI VICI 2025 DESEMBER 22 - Malam Hari</h1>
-    
-    <!-- View Toggle -->
-    <div class="view-toggle">
-        <button class="toggle-btn active" onclick="showSlideView()">📱 Slide View</button>
-        <button class="toggle-btn" onclick="showGridView()">🔲 Grid View</button>
-    </div>
-    
-    <!-- Filter Checkbox -->
-    <!-- <div class="filter-container">
-        <input type="checkbox" id="hideNonPriority" class="filter-checkbox" checked onchange="toggleNonPriorityFilter()">
-        <label for="hideNonPriority" class="filter-label">🎉 Sembunyikan dokumentasi yang tidak meriah</label>
-    </div> -->
-    
-    <!-- Slide View (Default) -->
-    <div id="slide-container">
-        <div id="media-container"></div>
-        <button class="floating-btn slide-download" onclick="downloadCurrentMedia()">⬇️ Download</button>
-        <div id="filename"></div>
-        <!-- Navigation buttons dihilangkan karena sudah floating -->
-    </div>
-    
-    <!-- Grid View -->
-    <div id="grid-container" class="grid-container">
-        <h2>Semua Media</h2>
-        <div id="grid-view" class="grid-view">
-            <!-- Grid items will be populated by JavaScript -->
+<body class="locked">
+    <div id="privacy-overlay" class="privacy-overlay">
+        <div class="privacy-card">
+            <h2>Proteksi privasi</h2>
+            <p>Jawab pertanyaan berikut untuk membuka dokumentasi.</p>
+            <form id="gate-form" class="gate-form">
+                <label for="gate-input">Siapa nama lengkap mentor ftj didalam dokumentasi ini?</label>
+                <input id="gate-input" class="blank-input" type="text" name="gate" placeholder="___ ______" autocomplete="off" required>
+                <button type="submit" class="gate-btn">Buka halaman</button>
+                <div id="gate-error" class="gate-error"></div>
+            </form>
         </div>
     </div>
-    
-    <script src="script.js"></script>
+
+    <div id="protected-content">
+        <!-- Floating Navigation -->
+        <div class="floating-nav">
+            <button class="floating-btn" id="prev">⬅️ Prev</button>
+            <button class="floating-btn" id="next">Next ➡️</button>
+        </div>
+        
+        <!-- Floating Controls -->
+        <div class="floating-controls">
+            <button class="floating-btn" onclick="toggleAutoplay()">⏯️ Auto</button>
+            <button class="floating-btn" onclick="toggleFullscreen()">🔳 Full</button>
+            <button class="floating-btn" onclick="shuffleMedia()">🔀 Shuffle</button>
+            <button class="floating-btn download-all" onclick="downloadAll()">📦 Download All</button>
+        </div>
+        
+        <!-- Auto Mode Notification - Separate from floating controls -->
+        <div id="auto-notification" class="auto-notification" onclick="enableAutoFromNotification()">
+            ⏯️ Klik untuk aktifkan mode auto
+        </div>
+        
+        <!-- Title -->
+        <h1>DOKUMENTASI VICI 2025 DESEMBER 22 - Malam Hari</h1>
+        
+        <!-- View Toggle -->
+        <div class="view-toggle">
+            <button class="toggle-btn active" onclick="showSlideView()">📱 Slide View</button>
+            <button class="toggle-btn" onclick="showGridView()">🔲 Grid View</button>
+        </div>
+        
+        <!-- Filter Checkbox -->
+        <!-- <div class="filter-container">
+            <input type="checkbox" id="hideNonPriority" class="filter-checkbox" checked onchange="toggleNonPriorityFilter()">
+            <label for="hideNonPriority" class="filter-label">🎉 Sembunyikan dokumentasi yang tidak meriah</label>
+        </div> -->
+        
+        <!-- Slide View (Default) -->
+        <div id="slide-container">
+            <div id="media-container"></div>
+            <button class="floating-btn slide-download" onclick="downloadCurrentMedia()">⬇️ Download</button>
+            <div id="filename"></div>
+            <!-- Navigation buttons dihilangkan karena sudah floating -->
+        </div>
+        
+        <!-- Grid View -->
+        <div id="grid-container" class="grid-container">
+            <h2>Semua Media</h2>
+            <div id="grid-view" class="grid-view">
+                <!-- Grid items will be populated by JavaScript -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const overlay = document.getElementById('privacy-overlay');
+            const form = document.getElementById('gate-form');
+            const input = document.getElementById('gate-input');
+            const error = document.getElementById('gate-error');
+            const protectedContent = document.getElementById('protected-content');
+            const answer = 'rio pratama';
+
+            function loadPlayerScript() {
+                const s = document.createElement('script');
+                s.src = 'script.js';
+                s.defer = true;
+                document.body.appendChild(s);
+            }
+
+            function unlock() {
+                document.body.classList.remove('locked');
+                document.body.classList.add('unlocked');
+                protectedContent.style.filter = 'none';
+                protectedContent.style.pointerEvents = 'auto';
+                overlay.remove();
+                loadPlayerScript();
+            }
+
+            form.addEventListener('submit', (e) => {
+                e.preventDefault();
+                const value = (input.value || '').trim().toLowerCase();
+                if (value === answer) {
+                    unlock();
+                } else {
+                    error.textContent = 'Jawaban salah, coba lagi.';
+                }
+            });
+
+            input.addEventListener('input', () => {
+                error.textContent = '';
+            });
+        })();
+    </script>
 </body>
 </html>
